@@ -185,17 +185,19 @@ class CryptoAPITrading:
                     print(order)
 
                     # capture the last price bought
+                    self.btc_last_price_bought = 
                     # capture the last quantity bought
                     # capture the date/time bought
             # else buy bitcoin (this is the first time buying bitcoin)
             else:
+                qty = .01
                 # buy bitcoin ((this is the first time buying bitcoin)
-                order = self.place_order_by_dollar_amount(
+                order = self.place_order(
                     str(uuid.uuid4()),
                     "buy",
                     "market",
                     "BTC-USD",
-                    10,
+                    ,{asset_quantity: qty}
                 )
                 print(order)
                 # store the last price bought
@@ -294,6 +296,7 @@ def main():
 if __name__ == "__main__":
     main()
     buy_avax()
+
     # COMP = compound
     # BTC = bitcoin
     # ETH = ethereum
