@@ -57,8 +57,8 @@ class CryptoAPITrading:
                 response = requests.get(url, headers=headers, timeout=10)
             elif method == "POST":
                 response = requests.post(url, headers=headers, json=json.loads(body), timeout=10)
-            print("Response Status Code:", response.status_code)
-            print("Response Content:", response.content)
+            # print("Response Status Code:", response.status_code)
+            # print("Response Content:", response.content)
             
 
             return response.json()
@@ -157,13 +157,13 @@ class CryptoAPITrading:
         print(buying_power)
         return float(buying_power)
     
-    def check_bitcoin(self) -> Any:
+    def check_token(self, ticker: str) -> Any:
         # get current bitcoin holdings
-        btc_holdings = self.get_holdings("BTC")
-        print("bitcoin holdings", btc_holdings)
+        token_holdings = self.get_holdings(ticker)
+        print(f"{ticker} holdings: {token_holdings}")
             
-        # if bitcoin holdings == zero, then...
-        if btc_holdings == 0:
+        # if token holdings == zero, then...
+        if token_holdings == 0:
             print("No bitcoin holdings")
             # get the current price of bitcoin
             btc_price = self.get_best_bid_ask("BTC-USD")
@@ -194,14 +194,16 @@ class CryptoAPITrading:
                     # capture the date/time bought
             # else buy bitcoin (this is the first time buying bitcoin)
             else:
-                qty = .01
+                # calculate btc quantity the equates to $10
+                btc_qty = 10 / btc_price
+                
                 # buy bitcoin (this is the first time buying bitcoin)
                 order = self.place_order(
                     str(uuid.uuid4()),
                     "buy",
                     "market",
                     "BTC-USD",
-                    {asset_quantity: qty}
+                    {asset_quantity: btc_qty}
                 )
                 print(order)
                 # store the last price bought
@@ -248,37 +250,35 @@ def get_account():
     api_trading_client.get_account()
     
 
-def buy_avax():
-    api_trading_client = CryptoAPITrading()
-
-    #  check buying power to see if there is enough to trade
-    buying_power = api_trading_client.check_buying_power()
-    # buying_power = float(buying_power)
-    if buying_power >= 1:
-        print("Buying power is greater than 1: ", buying_power)
-    
-    qty = ".05"
-    order = api_trading_client.place_order(
-        str(uuid.uuid4()),
-        "buy",
-        "market",
-        "AVAX-USD",
-        {"asset_quantity": qty},
-        
-    )
-
 def main():
     api_trading_client = CryptoAPITrading()
     print("     MENU")
     print("    ------")
     print("1. Get Account")
-    print("2. Buy crypto")
-    print("3. Initiate main()")
+    print("2. Token holdings")
+    print("3. Buy crypto")
+    print("4. Check order")
+    print("5. Initiate main()")
 
     menu_selection = input("Enter a number: ")
+    
     if menu_selection == "1":
         api_trading_client.get_account()
+
     elif menu_selection == "2":
+        token_selection = input("1. BTC\n2. ETH\n3. AVAX\n4. UNI\n5. LINK\n6. AAVE\n7. SHIB\n8. DOGE\n")
+        # token_selection = token_selection.upper()
+        token_selection = token_selection.upper()
+        response = api_trading_client.get_holdings(token_selection)
+
+        result = response['results'][0]
+        total_quantity = float(result['total_quantity'])
+        quantity_available_for_trading = float(result['quantity_available_for_trading'])
+
+        print(f"Total Quantity: {total_quantity}")
+        print(f"Quantity Available for Trading: {quantity_available_for_trading}")
+    
+    elif menu_selection == "3":
         crypto_selection = input("1. BTC\n2. ETH\n3. AVAX\n4. UNI\n5. LINK\n6. AAVE\n7. SHIB\n8. DOGE\n")
         # crytpo_selection = crypto_selection.upper()
         crypto_selection = f"{crypto_selection.upper()}-USD"
@@ -293,6 +293,11 @@ def main():
             {"asset_quantity": crypto_quantity}
         )
 
+        print(order)
+    
+    elif menu_selection == "4":
+        order_id = "667dd664-0924-4083-9106-14e3444b7842"
+        order = api_trading_client.get_order(order_id)
         print(order)
 
     else:
@@ -309,29 +314,8 @@ def main():
             time.sleep(1200)
    
 
-    # print(api_trading_client.get_estimated_price("BTC-USD", "ask", "1"))
-
-
-    # print(api_trading_client._get_current_timestamp())
-    # print(api_trading_client.get_estimated_price("BTC-USD", "bid", "0.1"))
-
-
-    """
-    BUILD YOUR TRADING STRATEGY HERE
-
-    order = api_trading_client.place_order(
-          str(uuid.uuid4()),
-          "buy",
-          "market",
-          "AVAX-USD",
-          {"asset_quantity": "0.0001"}
-    )
-    """
-
-
 if __name__ == "__main__":
     main()
-    # buy_avax()
 
 
     # COMP = compound
@@ -343,3 +327,6 @@ if __name__ == "__main__":
     # AAVE = aave
     # SHIB = shiba inu
     # DOGE = dogecoin
+
+    # print(api_trading_client.get_estimated_price("BTC-USD", "ask", "1"))
+    # print(api_trading_client.get_estimated_price("BTC-USD", "bid", "0.1"))
