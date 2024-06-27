@@ -33,7 +33,6 @@ class CryptoAPITrading:
     def _get_current_timestamp() -> int:
         return int(datetime.datetime.now(tz=datetime.timezone.utc).timestamp())
 
-
     @staticmethod
     def get_query_params(key: str, *args: Optional[str]) -> str:
         if not args:
@@ -54,10 +53,14 @@ class CryptoAPITrading:
         try:
             response = {}
             if method == "GET":
-                # print(url)
+                print("url:", url)
                 response = requests.get(url, headers=headers, timeout=10)
             elif method == "POST":
                 response = requests.post(url, headers=headers, json=json.loads(body), timeout=10)
+            print("Response Status Code:", response.status_code)
+            print("Response Content:", response.content)
+            
+
             return response.json()
         except requests.RequestException as e:
             print(f"Error making API request: {e}")
@@ -153,7 +156,8 @@ class CryptoAPITrading:
         buying_power = response.get("buying_power")
         print(buying_power)
         return float(buying_power)
-
+    
+    def check_bitcoin(self) -> Any:
         # get current bitcoin holdings
         btc_holdings = self.get_holdings("BTC")
         print("bitcoin holdings", btc_holdings)
@@ -185,19 +189,19 @@ class CryptoAPITrading:
                     print(order)
 
                     # capture the last price bought
-                    self.btc_last_price_bought = 
+                    self.btc_last_price_bought = 0
                     # capture the last quantity bought
                     # capture the date/time bought
             # else buy bitcoin (this is the first time buying bitcoin)
             else:
                 qty = .01
-                # buy bitcoin ((this is the first time buying bitcoin)
+                # buy bitcoin (this is the first time buying bitcoin)
                 order = self.place_order(
                     str(uuid.uuid4()),
                     "buy",
                     "market",
                     "BTC-USD",
-                    ,{asset_quantity: qty}
+                    {asset_quantity: qty}
                 )
                 print(order)
                 # store the last price bought
@@ -238,6 +242,12 @@ class CryptoAPITrading:
         print(btc_price)
 
         # if last price bought is 0
+
+def get_account():
+    api_trading_client = CryptoAPITrading()
+    api_trading_client.get_account()
+    
+
 def buy_avax():
     api_trading_client = CryptoAPITrading()
 
@@ -248,7 +258,7 @@ def buy_avax():
         print("Buying power is greater than 1: ", buying_power)
     
     qty = ".05"
-    order = api_trading_client.place_order_by_dollar_amount(
+    order = api_trading_client.place_order(
         str(uuid.uuid4()),
         "buy",
         "market",
@@ -259,20 +269,46 @@ def buy_avax():
 
 def main():
     api_trading_client = CryptoAPITrading()
+    print("     MENU")
+    print("    ------")
+    print("1. Get Account")
+    print("2. Buy crypto")
+    print("3. Initiate main()")
 
-    while True:
+    menu_selection = input("Enter a number: ")
+    if menu_selection == "1":
+        api_trading_client.get_account()
+    elif menu_selection == "2":
+        crypto_selection = input("1. BTC\n2. ETH\n3. AVAX\n4. UNI\n5. LINK\n6. AAVE\n7. SHIB\n8. DOGE\n")
+        # crytpo_selection = crypto_selection.upper()
+        crypto_selection = f"{crypto_selection.upper()}-USD"
+        crypto_quantity = input("Enter the quantity: ")
+        crypto_quantity = str(crypto_quantity)
+        
+        order = api_trading_client.place_order(
+            str(uuid.uuid4()),
+            "buy",
+            "market",
+            crypto_selection,
+            {"asset_quantity": crypto_quantity}
+        )
 
-        #  check buying power to see if there is enough to trade
-        buying_power = api_trading_client.check_buying_power()
-        # buying_power = float(buying_power)
-        if buying_power >= 10:
-            print("Buying power is greater than 10: ", buying_power)
-            api_trading_client.check_bitcoin()
+        print(order)
 
-        # sleep for 20 minutes
-        time.sleep(1200)
+    else:
+        while True:
 
-    print(api_trading_client.get_account())
+            #  check buying power to see if there is enough to trade
+            buying_power = api_trading_client.check_buying_power()
+            # buying_power = float(buying_power)
+            if buying_power >= 10:
+                print("Buying power is greater than 10: ", buying_power)
+                api_trading_client.check_bitcoin()
+
+            # sleep for 20 minutes
+            time.sleep(1200)
+   
+
     # print(api_trading_client.get_estimated_price("BTC-USD", "ask", "1"))
 
 
@@ -295,7 +331,8 @@ def main():
 
 if __name__ == "__main__":
     main()
-    buy_avax()
+    # buy_avax()
+
 
     # COMP = compound
     # BTC = bitcoin
